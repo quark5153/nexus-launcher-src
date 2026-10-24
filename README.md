@@ -1,159 +1,158 @@
 # NEXUS LAUNCHER v0.11 Beta — Clean Dark
 
-**ไทย** · [English](README.en.md)
+**English** · [ไทย](README.th.md)
 
-Minecraft launcher ข้ามแพลตฟอร์ม (Windows / Linux) เขียน Rust ล้วนทั้งระบบ (ไม่มี C/C++) โครงสร้าง
-**สถาปัตยกรรม 3 ชั้น (Three-Layer Architecture)** แบบเดียวกับ Modrinth App (Theseus)
-แต่หน้าตาเป็นดีไซน์ของเราเอง: ธีมมืดสะอาด (เหมือนแอปเกมร่วมสมัย) การ์ดมุมโค้งนุ่ม
-พาดขอบละลายตัว (≈8 %) และใช้สีชมพูเป็นสีเน้นเดียวที่โผล่เมื่อ active/เลือก
+A cross-platform Minecraft launcher (Windows / Linux), written entirely in Rust (no C/C++) with a
+**three-layer architecture** modelled on Modrinth App (Theseus) but with its own look: a clean dark
+theme, softly rounded cards, a fading hairline (≈8 %) and a single pink accent that only appears on
+active/selected elements.
 
 ---
 
-## ✅ ฟีเจอร์ (v0.11 Beta)
+## ✅ Features (v0.11 Beta)
 
-| ฟีเจอร์ | สถานะ |
+| Feature | Status |
 |---|---|
-| หลายอินสแตนซ์ แยกเวอร์ชัน/มอดแพ็ก/โปรไฟล์ | หน้าอินสแตนซ์ — แยกโฟลเดอร์เกมจริงต่อโปรไฟล์ |
-| Mod Loader: Vanilla / Fabric / Quilt | ใช้งานได้เต็ม |
-| Mod Loader: Forge / NeoForge | ใช้ installer อย่างเป็นทางการ (ทดลอง) |
-| มอด/แพ็กจาก Modrinth | ค้นหา ติดตั้ง พร้อม dependency + เช็กอัปเดตแพ็ก |
-| มอด/แพ็กจาก CurseForge | ต้องใส่ API key ของผู้ใช้เอง (หน้าตั้งค่า) |
-| นำเข้าแพ็กเก่า (.mrpack / .zip CurseForge / ไฟล์สำรอง Nexus) | หน้าอินสแตนซ์ → นำเข้า |
-| Java อัตโนมัติ 8 / 17 / 21 | ตรวจเครื่องก่อน ไม่มีค่อยโหลดจาก Adoptium |
-| RAM / JVM args ต่ออินสแตนซ์ | หน้าอินสแตนซ์ (เว้นว่าง = ใช้ค่าทั้งระบบ) |
-| บัญชี Microsoft หลายบัญชี | device-code flow ผ่าน Azure client id ที่ฝังมากับแอป |
-| Import / Export อินสแตนซ์ | .zip เดียวจบ ย้ายเครื่อง/แชร์เพื่อนได้ |
-| Worlds / Resource Packs / Shaders / Servers | เปิด-ปิด, ลบ, เปิดโฟลเดอร์, อ่าน servers.dat |
-| Log / Crash report ในตัว | เก็บ stdout/stderr ของเกม + รายการ crash-reports |
-| อัปเดตมอดแพ็ก | เช็กและอัปเดตเป็นรายแพ็ก |
-| ไม่มีโฆษณา / ไม่มีของแถม / ไม่ขอรหัสผ่าน | ไม่มีเน็ตเวิร์กของเราเองเลย — ต่อตรง Mojang/Modrinth/CurseForge |
+| Multiple instances — separate version/modpack/profile | Instances page — one real game folder per profile |
+| Mod loaders: Vanilla / Fabric / Quilt | Fully working |
+| Mod loaders: Forge / NeoForge | Official installer (experimental) |
+| Mods/packs from Modrinth | Search, install with dependencies, pack update checks |
+| Mods/packs from CurseForge | Requires the user's own API key (Settings page) |
+| Import existing packs (.mrpack / CurseForge .zip / Nexus backup) | Instances page → Import |
+| Automatic Java 8 / 17 / 21 | Checks the machine first, downloads from Adoptium only if missing |
+| Per-instance RAM / JVM args | Instances page (empty = global value) |
+| Multiple Microsoft accounts | Device-code flow using the Azure client id baked into the app |
+| Instance import / export | One .zip — move machines or share with a friend |
+| Worlds / Resource Packs / Shaders / Servers | Enable, delete, open folder, read servers.dat |
+| Built-in log / crash reports | Captures the game's stdout/stderr plus the crash-report list |
+| Modpack updates | Check and update per pack |
+| No ads, no extras, never asks for a password | No backend of our own — direct to Mojang/Modrinth/CurseForge |
 
 ---
 
-## 🏛️ สถาปัตยกรรม 3 ชั้น
+## 🏛️ Three-layer architecture
 
 ```text
 nexus-launcher/                  ← Cargo workspace + monorepo
 ├── apps/
-│   ├── app-frontend/            ← ชั้น 1: UI (Vue 3 + Pinia + Tailwind)
+│   ├── app-frontend/            ← layer 1: UI (Vue 3 + Pinia + Tailwind)
 │   │   ├── index.html
 │   │   ├── vite.config.ts
 │   │   └── src/
-│   │       ├── App.vue          ← shell: title bar, sidebar nav, log ticker
-│   │       ├── assets/fonts/    ← ฟอนต์ฝังในแอป (Prompt + IBM Plex Mono) ใช้ได้ตอนออฟไลน์
+│   │       ├── App.vue          ← shell: title bar, dock navigation, log ticker
+│   │       ├── assets/fonts/    ← fonts bundled in the app (Prompt + IBM Plex Mono), works offline
 │   │       ├── views/           ← InstancesView, ModsView, AccountsView, SettingsView
-│   │       ├── i18n.ts          ← ข้อความสองภาษา (ไทย / อังกฤษ)
-│   │       ├── stores/app.ts    ← state ทั้งหมดของ UI (Pinia)
-│   │       └── api/ipc.ts       ← typed IPC bridge (ที่เดียวที่เรียก Tauri)
-│   └── app/                     ← ชั้น 2: Tauri v2 shell (บาง ๆ)
+│   │       ├── stores/app.ts    ← all UI state (Pinia)
+│   │       ├── i18n.ts          ← Thai / English catalog
+│   │       └── api/ipc.ts       ← typed IPC bridge (the only place that calls Tauri)
+│   └── app/                     ← layer 2: Tauri v2 shell (thin)
 │       ├── tauri.conf.json
-│       ├── capabilities/        ← สิทธิ์ของ webview (จำเป็นใน Tauri v2)
+│       ├── capabilities/        ← webview permissions (required in Tauri v2)
 │       └── src/
 │           ├── lib.rs           ← plugin host + generate_handler
-│           ├── commands.rs      ← IPC surface: แปลงคำสั่ง → nexus-core
+│           ├── commands.rs      ← IPC surface: translates commands → nexus-core
 │           └── main.rs
 └── packages/
-    └── nexus-core/              ← ชั้น 3: สมองกล (Rust ล้วน ไม่มี Tauri)
+    └── nexus-core/              ← layer 3: the brain (pure Rust, no Tauri)
         └── src/
             ├── engine.rs        ← delta sync (SHA-1), natives, Java detection, JVM spawner + log capture
             ├── vanilla.rs       ← Mojang manifest, argument builder, loader merge (fabric/quilt/forge/neoforge)
-            ├── forge.rs         ← ติดตั้ง Forge/NeoForge ผ่าน installer อย่างเป็นทางการ
-            ├── modrinth.rs      ← ค้นหา/ติดตั้ง mod & modpack (.mrpack), dependency, เช็กอัปเดต
-            ├── curseforge.rs    ← CurseForge: ค้นหา, ไฟล์, มอด, แพ็ก (ใช้ API key ของผู้ใช้)
+            ├── forge.rs         ← installs Forge/NeoForge with the official installer
+            ├── modrinth.rs      ← search/install mods & modpacks (.mrpack), dependencies, update checks
+            ├── curseforge.rs    ← CurseForge: search, files, mods, packs (uses the user's API key)
             ├── auth.rs          ← Microsoft device-code login → Xbox Live → XSTS → Minecraft
-            ├── java.rs          ← หา JDK ตาม major + ดาวน์โหลด JRE จาก Adoptium อัตโนมัติ
-            ├── archive.rs       ← export/import อินสแตนซ์เป็น .zip (nexus / mrpack / CurseForge)
-            ├── content.rs       ← worlds, resource packs, shaders, servers (อ่าน NBT), log + crash report
+            ├── java.rs          ← find a JDK by major + download a JRE from Adoptium automatically
+            ├── archive.rs       ← export/import an instance as .zip (nexus / mrpack / CurseForge)
+            ├── content.rs       ← worlds, resource packs, shaders, servers (NBT), log + crash report
             └── state.rs         ← SQLite (rusqlite): config/instances/accounts + token store
 ```
 
-| ชั้น | ภาษา/เทคโนโลยี | หน้าที่ | ห้ามทำ |
+| Layer | Language / tech | Responsibility | Must not |
 |---|---|---|---|
-| 1 · `app-frontend` | Vue 3, Pinia, Tailwind | หน้าตา, state ของ UI, เรียก IPC | แตะไฟล์/เน็ต/โปรเซสเอง |
-| 2 · `nexus-shell` | Tauri v2, Rust | หน้าต่าง, ปลั๊กอิน OS, IPC commands, events | มี business logic |
-| 3 · `nexus-core` | Rust, tokio, reqwest, rusqlite | ดาวน์โหลด, ตรวจ SHA-1, SQLite, สั่ง JVM | รู้จัก Tauri/webview |
+| 1 · `app-frontend` | Vue 3, Pinia, Tailwind | Rendering, UI state, IPC calls | Touch files/network/processes itself |
+| 2 · `nexus-shell` | Tauri v2, Rust | Window, OS plugins, IPC commands, events | Hold business logic |
+| 3 · `nexus-core` | Rust, tokio, reqwest, rusqlite | Downloads, SHA-1 checks, SQLite, JVM spawning | Know about Tauri/webview |
 
-**จุดที่ต่างจาก Modrinth App:** core ของเรายุบเป็นโมดูลจบใน crate เดียว (Theseus แยกย่อยกว่านี้),
-ไม่ใช้ SQLx (ใช้ rusqlite แบบ synchronous ง่ายกว่า), ล็อกอิน Microsoft ใช้ device-code flow กับ
-Azure client id ที่ฝังมากับแอป (public client ไม่มี client secret ไม่มี server กลาง), และ UI เป็นดีไซน์
-"Clean Dark" ของเราเอง ไม่ใช่ Tailwind ชุดเดียวกับเขา
+**How it differs from Modrinth App:** our core collapses into modules inside a single crate (Theseus is
+split further), we do not use SQLx (plain synchronous rusqlite is simpler), Microsoft sign-in uses the
+device-code flow with an Azure client id baked into the app (public client, no client secret, no
+intermediate server), and the UI is our own "Clean Dark" design rather than the same Tailwind set.
 
-### IPC ที่มี
+### IPC commands
 
-| Command | ทำอะไร |
+| Command | What it does |
 |---|---|
-| `bootstrap` | โหลด config + installed + manifest + java runtimes + data/exports dir |
-| `save_config` | บันทึก config ลง SQLite |
-| `create_instance` / `update_instance` / `delete_instance` | จัดการโปรไฟล์ (แรม/java/JVM แยกต่อโปรไฟล์) |
-| `launch_instance` | เตรียมไฟล์ + เลือก Java + สั่ง JVM (`launch=false` = ดาวน์โหลดอย่างเดียว) |
-| `list_java` / `install_java` / `detect_java` | ตรวจหาและติดตั้ง JRE 8/17/21 จาก Adoptium |
-| `ms_check_client` | ตรวจ client id ก่อนล็อกอิน — แปลง AADSTS error เป็นคำแนะนำภาษาไทย |
-| `ms_device_start` / `ms_device_poll` / `ms_logout` / `set_active_account` | ล็อกอิน Microsoft + สลับบัญชี |
-| `search_modrinth` / `search_curseforge` / `install_project` | ค้นหา/ติดตั้งมอดและแพ็กจากสองแหล่ง |
-| `install_custom_pack` | นำเข้าแพ็กจาก URL (.mrpack / .zip CurseForge) |
-| `export_instance` / `import_instance` / `suggested_export_path` | สำรอง/ย้ายเครื่อง/แชร์ให้เพื่อน |
-| `list_content` / `toggle_content` / `delete_content` | worlds, resource packs, shaders, servers |
-| `read_log` / `list_crashes` / `read_crash` | ดู log และ crash report ในตัว |
-| `check_updates` / `update_pack` | เช็ก/อัปเดตมอดแพ็กจาก Modrinth |
-| `open_data_folder` / `open_instance_folder` / `list_loader_versions` | งานระบบ |
+| `bootstrap` | Loads config + installed + manifest + java runtimes + data/exports dir |
+| `save_config` | Writes the config to SQLite |
+| `create_instance` / `update_instance` / `delete_instance` | Manage profiles (per-profile RAM/java/JVM) |
+| `launch_instance` | Prepares files + picks Java + spawns the JVM (`launch=false` = download only) |
+| `list_java` / `install_java` / `detect_java` | Detect and install JRE 8/17/21 from Adoptium |
+| `ms_check_client` | Pre-flights the client id and turns AADSTS errors into advice |
+| `ms_device_start` / `ms_device_poll` / `ms_logout` / `set_active_account` | Microsoft sign-in + account switching |
+| `search_modrinth` / `search_curseforge` / `install_project` | Search/install mods and packs from both sources |
+| `install_custom_pack` | Import a pack from a URL (.mrpack / CurseForge .zip) |
+| `export_instance` / `import_instance` / `suggested_export_path` | Back up / move machines / share |
+| `list_content` / `toggle_content` / `delete_content` | Worlds, resource packs, shaders, servers |
+| `read_log` / `list_crashes` / `read_crash` | In-app log and crash reports |
+| `check_updates` / `update_pack` | Check/update Modrinth modpacks |
+| `open_data_folder` / `open_instance_folder` / `list_loader_versions` | System helpers |
 
-Events: `nexus-log` (ข้อความ log), `nexus-progress` (label + frac) → แถบ progress + ticker ด้านล่าง
-
----
-
-## 🎨 ดีไซน์ — Clean Dark
-
-* พื้นหลังโทนมืดกลาง `#0e1014` / แผ่นคนล์ `#15181e` / การ์ดซ้อน `#1b1f27` — ไม่มีกรรมเรียด/ปริมพู
-* **สีเน้นเดียว**: ชมพู `#ff8fb8` ใช้จุดโปร่ง — active nav, pill ที่เลือก, ปุ่มเล่น, สถานะสำคัญ
-* **Title bar** กลางเฉียง: โลโก้ + เวอร์ชัน + สถานะ Java/ปุ่มเปิดโฟลเดอร์ แบบ pill เล็ก
-* **Sidebar** ซ้าย: dock ไอคอน 4 หน้า (อินสแตนซ์ / มอด & แพ็ก / โปรไฟล์ / ตั้งค่า) ขยายตามเมาส์
-* **ภาษา**: ปุ่ม `TH | EN` บน title bar จำภาษาที่เลือกไว้
-* **ปุ่มเล่น**: แถบกว้างเต็มคอลัมน์ สีชมพู rounded-xl (จุดชมพูใหญ่สุดในแอป) ใต้แถบ progress
-* **ตาราง**: หน้า Versions เป็นตารางธรรมดา (เวอร์ชัน / ประเภท / วันวาง) หัว sticky
-* **Log ticker**: บรรทัด mono ใต้หน้าจอ เลื่อนอัตโนมัติ
-* ฟอนต์: **Prompt** (thai + latin, 3 น้ำหนัก) + IBM Plex Mono — **ฝังไฟล์ woff2 ไว้ในแอป** จึงเหมือนเดิมตอนออฟไลน์
+Events: `nexus-log` (log lines), `nexus-progress` (label + frac) → the progress bar and footer ticker.
 
 ---
 
-## 🚀 build & ติดตั้งบน CachyOS
+## 🎨 Design — Clean Dark
+
+* Neutral dark background `#0e1014` / panel `#15181e` / raised card `#1b1f27` — no gradients or shadows on layout
+* **One accent**: pink `#ff8fb8`, used sparingly — active nav, selected pill, launch action, key status
+* **Title bar**: logo + version on the left, Java status and the data-folder button as small pills on the right
+* **Language**: a `TH | EN` switch sits in the title bar and the choice is remembered
+* **Sidebar dock**: four icon destinations (Instances / Mods & Packs / Accounts / Settings) that magnify toward the pointer
+* **Log ticker**: a mono line under the screen that scrolls on its own
+* Fonts: **Prompt** (Thai + Latin, 3 weights) + IBM Plex Mono — the woff2 files are **bundled in the app**, so it looks identical offline
+
+---
+
+## 🚀 Build & install (Arch / CachyOS)
 
 ```bash
 ./build-package.sh            # 1) vite build  2) cargo build  3) makepkg
 ```
 
-ได้ `dist-packages/nexus-launcher-0.1.0-1-x86_64.pkg.tar.zst` → ติดตั้งทั้งระบบ:
+This produces `dist-packages/nexus-launcher-<version>-1-x86_64.pkg.tar.zst`; install it system-wide:
 
 ```bash
-sudo pacman -U dist-packages/nexus-launcher-0.1.0-1-x86_64.pkg.tar.zst
+sudo pacman -U dist-packages/nexus-launcher-<version>-1-x86_64.pkg.tar.zst
 ```
 
-เวอร์ชันเดินทีละ 0.01 (v0.1 Beta → v0.11 Beta → v0.12 …) — เขียนทุกไฟล์ให้พร้อมกันด้วย:
+The version moves in steps of 0.01 (v0.1 Beta → v0.11 Beta → v0.12 …) and every manifest is written
+in one go:
 
 ```bash
-./tools/bump-version.py        # +0.01 แล้วอัปเดต tauri.conf.json / Cargo.toml / package.json / PKGBUILD
+./tools/bump-version.py        # +0.01 and updates tauri.conf.json / Cargo.toml / package.json / PKGBUILD
 ```
 
-หรือติดตั้งเฉพาะผู้ใช้ (ไม่ต้อง root, ขึ้นเมนู KDE):
+Or install for the current user only (no root, appears in the KDE menu):
 
 ```bash
 ./install-user.sh
 ```
 
-### dev mode
+### Dev mode
 
 ```bash
-npm --prefix apps/app-frontend run dev      # เทอร์มินัล 1 (Vite :1420)
-cargo run -p nexus-shell                    # เทอร์มินัล 2 → โหลด devUrl
+npm --prefix apps/app-frontend run dev      # terminal 1 (Vite :1420)
+cargo run -p nexus-shell                    # terminal 2 → loads devUrl
 ```
 
-> release build **ต้อง** ใส่ `--features custom-protocol` ไม่งั้นแอปจะไปเปิด `http://localhost:1420`
-> (`build-package.sh` ใส่ให้แล้ว)
+> A release build **must** use `--features custom-protocol`, otherwise the app opens
+> `http://localhost:1420` (`build-package.sh` already passes it).
 
-### ข้อมูลบนเครื่อง
+### Data on disk
 
-* state: `~/.local/share/nexus/nexus_state.sqlite3` (config + instance + token ของบัญชี)
-* เกม/ไฟล์ดาวน์โหลด: `~/.local/share/nexus/<provider>/<instance>/`
-* JRE ที่ดาวน์โหลดเอง: `~/.local/share/nexus/runtimes/jre-<major>/`
-* ไฟล์สำรองอินสแตนซ์: `~/.local/share/nexus/exports/`
-* Java: หาจาก `JAVA_HOME`, `/usr/lib/jvm/*`, `/usr/bin/java` แล้วเลือก major ตาม `javaVersion` ของเวอร์ชันเกม
-  (ไม่พบและเปิด auto_java → ดาวน์โหลด JRE จาก Adoptium ครั้งเดียวแล้วใช้ซ้ำ)
+* State: `~/.local/share/nexus/nexus_state.sqlite3` (config + instances + account tokens)
+* Game files/downloads: `~/.local/share/nexus/<provider>/<instance>/`
+* Self-downloaded JREs: `~/.local/share/nexus/runtimes/jre-<major>/`
+* Instance backups: `~/.local/share/nexus/exports/`
+* Java: looks in `JAVA_HOME`, `/usr/lib/jvm/*`, `/usr/bin/java` and picks the major the game version
+  asks for (if missing and `auto_java` is on, a JRE is downloaded from Adoptium once and reused)
