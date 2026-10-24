@@ -1,4 +1,6 @@
-# NEXUS LAUNCHER v0.1 Beta — Clean Dark
+# NEXUS LAUNCHER v0.11 Beta — Clean Dark
+
+**ไทย** · [English](README.en.md)
 
 Minecraft launcher ข้ามแพลตฟอร์ม (Windows / Linux) เขียน Rust ล้วนทั้งระบบ (ไม่มี C/C++) โครงสร้าง
 **สถาปัตยกรรม 3 ชั้น (Three-Layer Architecture)** แบบเดียวกับ Modrinth App (Theseus)
@@ -7,7 +9,7 @@ Minecraft launcher ข้ามแพลตฟอร์ม (Windows / Linux) เ
 
 ---
 
-## ✅ ฟีเจอร์ (v0.1 Beta)
+## ✅ ฟีเจอร์ (v0.11 Beta)
 
 | ฟีเจอร์ | สถานะ |
 |---|---|
@@ -39,7 +41,8 @@ nexus-launcher/                  ← Cargo workspace + monorepo
 │   │   └── src/
 │   │       ├── App.vue          ← shell: title bar, sidebar nav, log ticker
 │   │       ├── assets/fonts/    ← ฟอนต์ฝังในแอป (Prompt + IBM Plex Mono) ใช้ได้ตอนออฟไลน์
-│   │       ├── views/           ← PlayView, ModsView, InstancesView, VersionsView, AccountsView, SettingsView
+│   │       ├── views/           ← InstancesView, ModsView, AccountsView, SettingsView
+│   │       ├── i18n.ts          ← ข้อความสองภาษา (ไทย / อังกฤษ)
 │   │       ├── stores/app.ts    ← state ทั้งหมดของ UI (Pinia)
 │   │       └── api/ipc.ts       ← typed IPC bridge (ที่เดียวที่เรียก Tauri)
 │   └── app/                     ← ชั้น 2: Tauri v2 shell (บาง ๆ)
@@ -103,7 +106,8 @@ Events: `nexus-log` (ข้อความ log), `nexus-progress` (label + frac)
 * พื้นหลังโทนมืดกลาง `#0e1014` / แผ่นคนล์ `#15181e` / การ์ดซ้อน `#1b1f27` — ไม่มีกรรมเรียด/ปริมพู
 * **สีเน้นเดียว**: ชมพู `#ff8fb8` ใช้จุดโปร่ง — active nav, pill ที่เลือก, ปุ่มเล่น, สถานะสำคัญ
 * **Title bar** กลางเฉียง: โลโก้ + เวอร์ชัน + สถานะ Java/ปุ่มเปิดโฟลเดอร์ แบบ pill เล็ก
-* **Sidebar** ซ้าย: nav ไอคอน 5 หน้า (เล่นเกม / มอด & แพ็ก / เวอร์ชัน / โปรไฟล์ / ตั้งค่า) + การ์ดโปรไฟล์ล่าง
+* **Sidebar** ซ้าย: dock ไอคอน 4 หน้า (อินสแตนซ์ / มอด & แพ็ก / โปรไฟล์ / ตั้งค่า) ขยายตามเมาส์
+* **ภาษา**: ปุ่ม `TH | EN` บน title bar จำภาษาที่เลือกไว้
 * **ปุ่มเล่น**: แถบกว้างเต็มคอลัมน์ สีชมพู rounded-xl (จุดชมพูใหญ่สุดในแอป) ใต้แถบ progress
 * **ตาราง**: หน้า Versions เป็นตารางธรรมดา (เวอร์ชัน / ประเภท / วันวาง) หัว sticky
 * **Log ticker**: บรรทัด mono ใต้หน้าจอ เลื่อนอัตโนมัติ
