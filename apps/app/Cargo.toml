@@ -1,0 +1,31 @@
+[package]
+name = "nexus-shell"
+description = "Tauri v2 shell: IPC bridge, window/plugin host for nexus-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "nexus_shell_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "nexus-launcher"
+path = "src/main.rs"
+
+[features]
+# Production builds embed the built frontend instead of loading the Vite dev server.
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+nexus-core = { path = "../../packages/nexus-core" }
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-dialog = "2.0.0"
+tauri-plugin-opener = "2.0.0"
+tauri-plugin-single-instance = "2.0.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }

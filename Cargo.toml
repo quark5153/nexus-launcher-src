@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = ["apps/app", "packages/nexus-core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://localhost/nexus-launcher"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

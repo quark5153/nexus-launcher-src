@@ -1,0 +1,20 @@
+# Maintainer: Nexus <nexus@localhost>
+pkgname=nexus-launcher
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Pure Rust Minecraft launcher - Vue 3 UI, Tauri v2 shell, headless nexus-core"
+arch=('x86_64')
+url="https://localhost/nexus-launcher"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'hicolor-icon-theme' 'xdg-utils')
+optdepends=('jre-openjdk: Java runtime required to actually start Minecraft')
+provides=('nexus-launcher')
+conflicts=()
+source=('nexus-launcher' 'nexus-launcher.desktop' 'nexus-launcher.png')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -Dm755 "$srcdir/nexus-launcher" "$pkgdir/usr/bin/nexus-launcher"
+  install -Dm644 "$srcdir/nexus-launcher.desktop" "$pkgdir/usr/share/applications/nexus-launcher.desktop"
+  install -Dm644 "$srcdir/nexus-launcher.png" "$pkgdir/usr/share/icons/hicolor/512x512/apps/nexus-launcher.png"
+}

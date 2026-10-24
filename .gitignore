@@ -1,0 +1,21 @@
+# build output
+/target
+dist-packages/
+packaging/pkg/
+packaging/nexus-launcher
+packaging/*.pkg.tar.zst
+apps/app-frontend/dist/
+
+# dependencies
+node_modules/
+
+# local state written next to an instance
+.nexus-mod-meta.json
+
+# editor / OS noise
+.DS_Store
+*.swp
+
+# python caches
+__pycache__/
+*.pyc

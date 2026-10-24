@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Nexus Launcher
+GenericName=Minecraft Launcher
+Comment=Pure Rust Minecraft launcher (Tauri v2 + Vue 3) — Cyber-Sakura edition
+Exec=nexus-launcher %U
+Icon=nexus-launcher
+Terminal=false
+Categories=Game;
+Keywords=minecraft;launcher;modrinth;fabric;quilt;
+StartupNotify=true
+StartupWMClass=nexus-launcher

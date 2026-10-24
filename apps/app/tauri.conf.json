@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Nexus Launcher",
+  "version": "0.1.0",
+  "identifier": "com.nexus.sakuralauncher",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../../apps/app-frontend run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm --prefix ../../apps/app-frontend run build",
+    "frontendDist": "../../apps/app-frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Nexus Launcher",
+        "width": 1320,
+        "height": 860,
+        "minWidth": 1080,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "appimage"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "category": "Game",
+    "shortDescription": "Nexus Launcher - pure Rust Minecraft launcher",
+    "longDescription": "Nexus Launcher is a pure Rust Minecraft launcher: three-layer architecture (Vue 3 UI, Tauri v2 shell, headless nexus-core) with Mojang manifest sync, SHA-1 delta sync, Fabric/Quilt, Modrinth mods & modpacks and SQLite state.",
+    "publisher": "Nexus"
+  }
+}
