@@ -19,3 +19,7 @@ node_modules/
 # python caches
 __pycache__/
 *.pyc
+
+# build artifacts written by makepkg / tauri
+packaging/src/
+apps/app/gen/
