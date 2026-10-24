@@ -12,7 +12,6 @@ const th = {
   "nav.settings": "ตั้งค่า",
 
   "header.dataFolder": "โฟลเดอร์ข้อมูล",
-  "header.lang": "EN",
   "header.rustCore": "rust core",
   "greeting.morning": "สวัสดีตอนเช้า",
   "greeting.afternoon": "สวัสดีตอนบ่าย",
@@ -188,7 +187,6 @@ const en: Record<Key, string> = {
   "nav.settings": "Settings",
 
   "header.dataFolder": "Data folder",
-  "header.lang": "TH",
   "header.rustCore": "rust core",
   "greeting.morning": "Good morning",
   "greeting.afternoon": "Good afternoon",

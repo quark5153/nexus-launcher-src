@@ -21,13 +21,20 @@
         <span class="java-chip" :class="{ on: Boolean(store.java || store.config.java_path) }" :title="javaLabel">
           <span class="jdot" />
           <span class="truncate">{{ javaLabel }}</span>
-        </span>          <button
-            class="lang-chip"
-            :title="store.lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'"
-            @click="store.toggleLang()"
-          >
-            {{ store.t("header.lang") }}
-          </button>
+        </span>          <div class="lang-chip lang-switch" role="group" aria-label="ภาษา / Language">
+            <button
+              type="button"
+              :class="{ on: store.lang === 'th' }"
+              :aria-pressed="store.lang === 'th'"
+              @click="store.setLang('th')"
+            >TH</button>
+            <button
+              type="button"
+              :class="{ on: store.lang === 'en' }"
+              :aria-pressed="store.lang === 'en'"
+              @click="store.setLang('en')"
+            >EN</button>
+          </div>
           <button class="masthead-action" @click="store.openFolder()">{{ store.t("header.dataFolder") }}</button>
         </div>
     </header>

@@ -470,6 +470,38 @@ body {
   color: var(--text);
 }
 
+/* two explicit options, the active one lit — no guessing what the chip does */
+.lang-switch {
+  gap: 2px;
+  padding: 3px;
+  min-width: 0;
+}
+.lang-switch button {
+  min-width: 30px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 130ms ease, color 130ms ease;
+}
+.lang-switch button:hover {
+  color: var(--text);
+}
+.lang-switch button.on {
+  background: var(--acc);
+  color: #200b15;
+  font-weight: 600;
+}
+.lang-switch button:focus-visible {
+  outline: 2px solid var(--acc-2);
+  outline-offset: 1px;
+}
+
 .java-chip {
   display: inline-flex;
   align-items: center;
