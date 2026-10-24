@@ -1,6 +1,6 @@
 # NEXUS LAUNCHER v0.1 Beta — Clean Dark
 
-Minecraft launcher สำหรับ Linux/CachyOS เขียน Rust ล้วนทั้งระบบ (ไม่มี C/C++) โครงสร้าง
+Minecraft launcher ข้ามแพลตฟอร์ม (Windows / Linux) เขียน Rust ล้วนทั้งระบบ (ไม่มี C/C++) โครงสร้าง
 **สถาปัตยกรรม 3 ชั้น (Three-Layer Architecture)** แบบเดียวกับ Modrinth App (Theseus)
 แต่หน้าตาเป็นดีไซน์ของเราเอง: ธีมมืดสะอาด (เหมือนแอปเกมร่วมสมัย) การ์ดมุมโค้งนุ่ม
 พาดขอบละลายตัว (≈8 %) และใช้สีชมพูเป็นสีเน้นเดียวที่โผล่เมื่อ active/เลือก
@@ -19,7 +19,7 @@ Minecraft launcher สำหรับ Linux/CachyOS เขียน Rust ล้�
 | นำเข้าแพ็กเก่า (.mrpack / .zip CurseForge / ไฟล์สำรอง Nexus) | หน้าอินสแตนซ์ → นำเข้า |
 | Java อัตโนมัติ 8 / 17 / 21 | ตรวจเครื่องก่อน ไม่มีค่อยโหลดจาก Adoptium |
 | RAM / JVM args ต่ออินสแตนซ์ | หน้าอินสแตนซ์ (เว้นว่าง = ใช้ค่าทั้งระบบ) |
-| บัญชี Microsoft หลายบัญชี | device-code flow ผ่าน Azure client id ของผู้ใช้ |
+| บัญชี Microsoft หลายบัญชี | device-code flow ผ่าน Azure client id ที่ฝังมากับแอป |
 | Import / Export อินสแตนซ์ | .zip เดียวจบ ย้ายเครื่อง/แชร์เพื่อนได้ |
 | Worlds / Resource Packs / Shaders / Servers | เปิด-ปิด, ลบ, เปิดโฟลเดอร์, อ่าน servers.dat |
 | Log / Crash report ในตัว | เก็บ stdout/stderr ของเกม + รายการ crash-reports |
@@ -72,7 +72,7 @@ nexus-launcher/                  ← Cargo workspace + monorepo
 
 **จุดที่ต่างจาก Modrinth App:** core ของเรายุบเป็นโมดูลจบใน crate เดียว (Theseus แยกย่อยกว่านี้),
 ไม่ใช้ SQLx (ใช้ rusqlite แบบ synchronous ง่ายกว่า), ล็อกอิน Microsoft ใช้ device-code flow กับ
-Azure client id ของผู้ใช้เอง (ไม่ต้องมี client secret ไม่มี server กลาง), และ UI เป็นดีไซน์
+Azure client id ที่ฝังมากับแอป (public client ไม่มี client secret ไม่มี server กลาง), และ UI เป็นดีไซน์
 "Clean Dark" ของเราเอง ไม่ใช่ Tailwind ชุดเดียวกับเขา
 
 ### IPC ที่มี
@@ -153,46 +153,3 @@ cargo run -p nexus-shell                    # เทอร์มินัล 2 �
 * ไฟล์สำรองอินสแตนซ์: `~/.local/share/nexus/exports/`
 * Java: หาจาก `JAVA_HOME`, `/usr/lib/jvm/*`, `/usr/bin/java` แล้วเลือก major ตาม `javaVersion` ของเวอร์ชันเกม
   (ไม่พบและเปิด auto_java → ดาวน์โหลด JRE จาก Adoptium ครั้งเดียวแล้วใช้ซ้ำ)
-
----
-
-## 🔧 สิ่งที่แก้จากซอร์ส zip เดิม
-
-| อาการ | สาเหตุ | ที่แก้ |
-|---|---|---|
-| Rust คอมไพล์ไม่ผ่าน 6 จุด | zip ทำ escape ในสตริงหาย (`'\''`, `'\t'`, `'\n'`, `'\r'`, `"\""` ×2) | คืน escape ใน `nexus-core` |
-| `vue-tsc` ฟ้อง TS2322 | `v-for` ส่ง `string` เข้า union | ใช้ `as const` |
-| เปิดแอปแล้วหน้าจอว่าง | ไม่มี feature `custom-protocol` → release ไปโหลด devUrl | เพิ่ม `[features]` + build flag |
-| ค่าไม่บันทึก / ไม่มี DB | ไม่มี `capabilities/` ของ Tauri v2 → `listen()` ถูกปฏิเสธ | เพิ่ม `apps/app/capabilities/default.json` |
-| ตัวกรองเวอร์ชันไม่ทำงาน | Rust ส่ง `type` แต่ UI อ่าน `kind` | ใช้ `v.type` ใน UI ใหม่ |
-| เกม launch ไม่ติด | หยิบ Java 25 ทั้งที่ MC 1.21.1 ต้องใช้ 21 | `resolve_java_for_major()` เลือก JDK ให้ตรง |
-| ล็อกอิน Microsoft ไม่ผ่านทุกครั้ง | ส่ง body เป็น JSON แต่ Entra รับเฉพาะ form-encoded → `AADSTS900144: body must contain client_id` | เปลี่ยน `devicecode` เป็น `.form([...])` + แปลงรหัส AADSTS เป็นคำแนะนำภาษาไทย |
-| ล็อกอินผ่านถึง XSTS แล้วเจอ 403 `Invalid app registration` | Mojang รับเฉพาะ client id ที่อยู่ใน allow list ของตัวเอง (ตรวจด้วยมือทุกแอปใหม่) | ข้อความ error แปลงเป็นภาษาไทย + ลิงก์ฟอร์มขออนุมัติ `aka.ms/mce-reviewappid` |
-
-## ข้อจำกัดที่รู้อยู่
-
-* ทดสอบแล้ว: `cargo check` ทั้ง workspace, `vue-tsc`, unit test ของ export/import + content manager,
-  build ผ่าน, หน้าต่างเปิด, `bootstrap` อ่าน/เขียน SQLite
-* **Forge / NeoForge** ใช้ตัวติดตั้งอย่างเป็นทางการ (`--installClient`) — โค้ดพร้อมแต่ยังไม่ได้ทดสอบ
-  ติดตั้งจริงกับทุกเวอร์ชัน เพราะต้องดาวน์โหลดหลายร้อย MB ต่อครั้ง
-* **Microsoft login** ต้องมี Azure application (client) id ของผู้ใช้เอง (หน้าตั้งค่า) — ทดสอบกับ endpoint
-  จริงแล้ว (ได้ device code / เจอ AADSTS ที่ถูกต้อง) แต่ยังไม่ได้ล็อกอินจบด้วยบัญชีจริง
-
-### ตั้งค่า Azure ให้ล็อกอินได้ (สำคัญ)
-
-App registration ต้องมี 3 อย่างนี้ ไม่อย่างนั้นจะได้ `AADSTS700016` / `AADSTS7000218`:
-
-1. **Supported account types** = *Accounts in any organizational directory and personal Microsoft accounts*
-   — บัญชี Minecraft ทุกบัญชีเป็นบัญชี Microsoft **ส่วนตัว** ถ้าแอปเป็น single-tenant จะหาไม่เจอใน tenant `consumers`
-2. **Authentication → Allow public client flows** = *Yes* (device code flow ไม่มี client secret)
-3. **API permissions** → Microsoft Graph → Delegated → `XboxLive.signin` (+ `offline_access` ตามมาเอง)
-
-หน้าตั้งค่าในแอปมีปุ่ม **ตรวจสอบ client id** ที่ยิง `devicecode` จริงแล้วบอกว่า client id ใช้ได้หรือติดอะไร
-
-4. **ต้องให้ Mojang อนุมัติ client id (allow list)** — ข้อนี้ Azure Portal เปิดให้เองไม่ได้
-   `login_with_xbox` จะตอบ `403 Invalid app registration` จนกว่า Mojang จะเพิ่มแอปเข้า allow list
-   (นโยบาย: ทุกแอปใหม่ที่เรียก Java game service API ต้องยื่นคำขอ) → กรอกฟอร์มที่
-   <https://aka.ms/mce-reviewappid> ด้วย Application (client) ID แล้วรอผล
-   ระหว่างรอ: เล่น Singleplayer/บัญชีออฟไลน์ได้ แต่เซิร์ฟเวอร์ออนไลน์ที่ต้องยืนยันตัวตนยังไม่ได้
-* **CurseForge** ต้องมี API key ของผู้ใช้เอง — ค้นหา/ติดตั้งจะไม่ทำงานถ้าไม่ได้ใส่
-* อัปเดตมอดเป็นรายแพ็ก (Modrinth) ยังไม่ใช่รายมอด และยังไม่มีการอัปเดตตัว launcher เอง
