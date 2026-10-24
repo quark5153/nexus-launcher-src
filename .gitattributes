@@ -1,0 +1,4 @@
+# GitHub derives the language bar from the files it knows how to classify.
+# This project is one product rather than a library, so the bar is turned off by
+# marking the tree as vendored: linguist then contributes nothing to the stats.
+* linguist-vendored
