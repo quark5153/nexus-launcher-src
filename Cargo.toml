@@ -3,7 +3,7 @@ resolver = "2"
 members = ["apps/app", "packages/nexus-core"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.11.0"
 edition = "2021"
 license = "MIT"
 repository = "https://localhost/nexus-launcher"

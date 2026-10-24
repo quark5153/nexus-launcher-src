@@ -1,6 +1,6 @@
 # Maintainer: Nexus <nexus@localhost>
 pkgname=nexus-launcher
-pkgver=0.1.0
+pkgver=0.11.0
 pkgrel=1
 pkgdesc="Pure Rust Minecraft launcher - Vue 3 UI, Tauri v2 shell, headless nexus-core"
 arch=('x86_64')

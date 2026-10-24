@@ -142,7 +142,7 @@ export interface ProgressPayload {
   frac: number;
 }
 
-export type TabId = "mods" | "instances" | "accounts" | "settings" | "github";
+export type TabId = "mods" | "instances" | "accounts" | "settings";
 
 export interface NavItem {
   id: TabId;

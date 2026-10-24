@@ -10,7 +10,6 @@ const th = {
   "nav.mods": "มอด & แพ็ก",
   "nav.accounts": "โปรไฟล์",
   "nav.settings": "ตั้งค่า",
-  "nav.github": "GitHub",
 
   "header.dataFolder": "โฟลเดอร์ข้อมูล",
   "header.lang": "EN",
@@ -178,24 +177,6 @@ const th = {
   "toast.profileRemoved": "ลบโปรไฟล์ออกจากคลังแล้ว",
   "toast.profilePurged": "ลบโปรไฟล์และไฟล์ทั้งหมดแล้ว",
 
-  "github.title": "GitHub",
-  "github.about": "เกี่ยวกับโปรเจกต์",
-  "github.aboutDesc": "Nexus Launcher ตัวเต็มอยู่ใน repo ซอร์สแบบปิด (private) — เปิดได้เฉพาะเจ้าของบัญชี",
-  "github.repo": "ซอร์สโค้ด",
-  "github.docs": "เอกสาร",
-  "github.releases": "รีลีส",
-  "github.issues": "แจ้งปัญหา",
-  "github.version": "เวอร์ชัน",
-  "github.license": "สัญญาอนุญาต",
-  "github.stack": "เทคโนโลยี",
-  "github.visibility": "การเข้าถึง",
-  "github.private": "ส่วนตัว",
-  "github.open": "เปิดบน GitHub",
-  "github.build": "บิลด์",
-  "github.buildDesc": "build-package.sh สร้างแพ็กเกจ Arch/CachyOS, install-user.sh ติดตั้งเฉพาะผู้ใช้",
-  "github.commit": "commit ล่าสุด",
-  "github.copy": "คัดลอกลิงก์",
-  "github.copied": "คัดลอกลิงก์แล้ว",
 } as const;
 
 type Key = keyof typeof th;
@@ -205,7 +186,6 @@ const en: Record<Key, string> = {
   "nav.mods": "Mods & Packs",
   "nav.accounts": "Profiles",
   "nav.settings": "Settings",
-  "nav.github": "GitHub",
 
   "header.dataFolder": "Data folder",
   "header.lang": "TH",
@@ -373,24 +353,6 @@ const en: Record<Key, string> = {
   "toast.profileRemoved": "Profile removed from library",
   "toast.profilePurged": "Profile and its files deleted",
 
-  "github.title": "GitHub",
-  "github.about": "About the project",
-  "github.aboutDesc": "The full Nexus Launcher lives in a private source repo — only the account owner can open it.",
-  "github.repo": "Source code",
-  "github.docs": "Documentation",
-  "github.releases": "Releases",
-  "github.issues": "Issues",
-  "github.version": "Version",
-  "github.license": "License",
-  "github.stack": "Stack",
-  "github.visibility": "Visibility",
-  "github.private": "Private",
-  "github.open": "Open on GitHub",
-  "github.build": "Build",
-  "github.buildDesc": "build-package.sh makes the Arch/CachyOS package, install-user.sh installs for one user",
-  "github.commit": "Latest commit",
-  "github.copy": "Copy link",
-  "github.copied": "Link copied",
 };
 
 const catalog: Record<Lang, Record<Key, string>> = { th, en: en as Record<Key, string> };
