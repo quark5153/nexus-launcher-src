@@ -3,7 +3,7 @@
     <!-- ── left: scope + import ─────────────────────────────────────────── -->
     <div class="flex min-h-0 flex-col gap-5">
       <section class="panel panel-spine p-4">
-        <p class="hex-label"><i />ค้นหาเฉพาะ</p>
+        <p class="hex-label"><i />{{ store.t("mods.scope") }}</p>
         <div class="mt-3 flex flex-col gap-1">
           <button
             v-for="t in types"
@@ -12,14 +12,14 @@
             :class="{ on: store.modType === t.id }"
             @click="pickType(t.id)"
           >
-            <span>{{ t.label }}</span>
+            <span>{{ store.t(t.id === "modpack" ? "mods.modpack" : "mods.mod") }}</span>
             <i class="hex-tick" :class="{ hot: store.modType === t.id }" />
           </button>
         </div>
 
         <div class="mt-4 h-px w-full bg-[var(--line)]" />
 
-        <p class="mt-3 hex-label"><i />แหล่งข้อมูล</p>
+        <p class="mt-3 hex-label"><i />{{ store.t("mods.source") }}</p>
         <div class="mt-2 flex gap-1.5">
           <button
             v-for="s in sources"
@@ -32,14 +32,12 @@
           </button>
         </div>
         <p class="mt-2 text-[10px] leading-relaxed text-[var(--dim)]">
-          {{ store.modSource === "curseforge"
-            ? "CurseForge ใช้ API key ที่ฝังมากับแอป (src/config.ts)"
-            : "Modrinth ไม่ต้องใช้คีย์ — ติดตั้งพร้อม dependency ให้เลย" }}
+          {{ store.t(store.modSource === "curseforge" ? "mods.cfNote" : "mods.mrNote") }}
         </p>
 
         <div class="mt-4 h-px w-full bg-[var(--line)]" />
 
-        <p class="mt-3 hex-label"><i />ติดตั้งลงโปรไฟล์</p>
+        <p class="mt-3 hex-label"><i />{{ store.t("mods.installTo") }}</p>
         <SelectField
           class="mt-2 text-[11px]"
           :model-value="store.config.selected_version"
@@ -49,7 +47,7 @@
       </section>
 
       <section class="panel panel-spine mt-auto p-4">
-        <label class="hex-label" for="pack-url"><i />ลิงก์ .mrpack</label>
+        <label class="hex-label" for="pack-url"><i />{{ store.t("mods.packUrl") }}</label>
         <input
           id="pack-url"
           v-model="store.packUrl"
@@ -59,7 +57,7 @@
           @keyup.enter="store.importPack()"
         />
         <button class="btn btn-solid mt-3 w-full" :disabled="store.busy" @click="store.importPack()">
-          นำเข้าแพ็ก
+          {{ store.t("mods.importPack") }}
         </button>
       </section>
     </div>
@@ -71,11 +69,11 @@
           v-model="store.modQuery"
           class="field flex-1"
           type="text"
-          placeholder="ค้นหา mod หรือ modpack บน Modrinth..."
+          :placeholder="store.t('mods.searchHint')"
           @keyup.enter="store.searchMods()"
         />
         <label class="flex shrink-0 items-center gap-2">
-          <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--dim)]">โหลด</span>
+          <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--dim)]">{{ store.t("mods.show") }}</span>
           <SelectField
             class="w-[74px] text-center font-mono text-[11px]"
             :model-value="String(store.modLimit)"
@@ -86,14 +84,14 @@
           <span class="font-mono text-[10.5px] text-[var(--dim)]">mod</span>
         </label>
         <span class="shrink-0 font-mono text-[11px] tabular-nums text-[var(--dim)]">
-          <template v-if="store.modSource === 'curseforge'">{{ store.cfHits.length }} รายการ</template>
+          <template v-if="store.modSource === 'curseforge'">{{ store.t("common.results", { n: store.cfHits.length }) }}</template>
           <template v-else-if="store.modTotal > 0">
-            {{ store.modHits.length }} / {{ store.modTotal.toLocaleString() }} รายการ
+            {{ store.modHits.length }} / {{ store.t("common.results", { n: store.modTotal.toLocaleString() }) }}
           </template>
-          <template v-else>{{ store.modHits.length }} รายการ</template>
+          <template v-else>{{ store.t("common.results", { n: store.modHits.length }) }}</template>
         </span>
         <button class="btn btn-solid shrink-0" :disabled="store.busy" @click="store.searchMods()">
-          {{ store.busy ? "...ค้นอยู่" : "ค้นหา" }}
+          {{ store.busy ? store.t("common.searching") : store.t("common.search") }}
         </button>
       </div>
 
@@ -143,7 +141,7 @@
                   :disabled="store.busy"
                   @click.stop="store.installHit(hit)"
                 >
-                  ติดตั้ง
+                  {{ store.t("common.install") }}
                 </button>
               </span>
             </article>
@@ -152,7 +150,7 @@
           <!-- โหลดหน้าถัดไปจนครบทุกรายการ -->
           <div v-if="store.modHits.length < store.modTotal" class="mt-4 flex flex-col items-center gap-1.5">
             <button class="btn" :disabled="store.modLoadingMore" @click="store.loadMoreMods()">
-              {{ store.modLoadingMore ? "กำลังโหลด…" : `โหลดเพิ่มอีก ${store.modLimit} รายการ` }}
+              {{ store.modLoadingMore ? store.t("common.loading") : store.t("mods.loadMore", { n: store.modLimit }) }}
             </button>
             <span class="font-mono text-[10px] tabular-nums text-[var(--dim)]">
               {{ store.modHits.length }} / {{ store.modTotal.toLocaleString() }}
@@ -205,11 +203,10 @@
                 class="btn btn-solid mt-auto w-full !py-1.5 text-[11.5px]"
                 :disabled="store.busy"
                 @click.stop="store.installCfHit(hit)"
-              >
-                ติดตั้ง
-              </button>
-            </span>
-          </article>
+              >                  {{ store.t("common.install") }}
+                </button>
+              </span>
+            </article>
         </div>
 
         <div v-else class="grid h-full place-items-center px-6">
@@ -221,9 +218,9 @@
                 </svg>
               </span>
             </span>
-            <p class="mt-5 text-[16px] font-semibold">ยังไม่มีผลลัพธ์</p>
+            <p class="mt-5 text-[16px] font-semibold">{{ store.t("mods.emptyTitle") }}</p>
             <p class="mt-1.5 text-[12.5px] leading-relaxed text-[var(--dim)]">
-              กำลังโหลดรายการยอดนิยมให้อัตโนมัติ — พิมพ์ชื่อมอดหรือมอดแพ็กแล้วกด Enter เพื่อค้นเอง
+              {{ store.t("mods.emptyDesc") }}
             </p>
           </div>
         </div>
@@ -234,7 +231,7 @@
         <div v-if="detail" class="detail-layer">
           <div class="flex shrink-0 items-center gap-2 px-4 py-3">
             <button class="btn btn-quiet !px-2.5 !py-1.5 text-[11px]" @click="closeDetail()">
-              ← กลับไปหน้ารายการ
+              {{ store.t("mods.back") }}
             </button>
             <span class="ml-auto font-mono text-[9.5px] uppercase tracking-[0.14em] text-[var(--dim)]">
               {{ detailType === "modpack" ? "modpack" : "mod" }} · {{ detailSource }}
@@ -256,8 +253,8 @@
               <div class="min-w-0 flex-1">
                 <h3 class="truncate text-[20px] font-semibold leading-tight">{{ detailTitle }}</h3>
                 <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] text-[var(--dim)]">
-                  <span class="text-[var(--acc-2)]">{{ formatCount(detailDownloads) }} ดาวน์โหลด</span>
-                  <span v-if="detailFollows">· {{ formatCount(detailFollows) }} ติดตาม</span>
+                  <span class="text-[var(--acc-2)]">{{ formatCount(detailDownloads) }} {{ store.t("common.downloads") }}</span>
+                  <span v-if="detailFollows">· {{ formatCount(detailFollows) }} {{ store.t("mods.follows") }}</span>
                   <span v-if="detailSlug">· {{ detailSlug }}</span>
                 </p>
                 <div class="mt-2 flex flex-wrap gap-1.5">
@@ -271,21 +268,21 @@
             </p>
 
             <div class="mt-5 rounded-[12px] border border-[var(--line)] bg-black/25 p-3.5">
-              <p class="hex-label"><i />ปลายทาง</p>
+              <p class="hex-label"><i />{{ store.t("mods.destination") }}</p>
               <p class="mt-2 text-[11.5px] text-[var(--muted)]">
-                ติดตั้งลง
+                {{ store.t("mods.installingInto") }}
                 <b class="font-medium text-[var(--text)]">{{ profileLabel }}</b>
               </p>
               <p class="mt-1 font-mono text-[9.5px] text-[var(--dim)]">
-                {{ detailType === "modpack" ? "แพ็กจะถูกติดตั้งเป็นโปรไฟล์ใหม่" : "มอดจะถูกวางในโฟลเดอร์ mods ของโปรไฟล์ที่เลือก" }}
+                {{ store.t(detailType === "modpack" ? "mods.packNewProfile" : "mods.modIntoMods") }}
               </p>
             </div>
 
             <div class="mt-4 flex flex-wrap gap-2">
               <button class="btn btn-solid flex-1" :disabled="store.busy" @click="installDetail()">
-                {{ store.busy ? "กำลังติดตั้ง…" : detailType === "modpack" ? "ติดตั้งแพ็กนี้" : "ติดตั้งมอดนี้" }}
+                {{ store.busy ? store.t("common.installing") : store.t(detailType === "modpack" ? "mods.installPack" : "mods.installMod") }}
               </button>
-              <button class="btn" @click="store.openUrl(projectUrl)">เปิดหน้าโปรเจกต์</button>
+              <button class="btn" @click="store.openUrl(projectUrl)">{{ store.t("mods.openProject") }}</button>
             </div>
           </div>
         </div>
@@ -312,7 +309,7 @@ const detail = ref<Detail | null>(null);
 const profileOptions = computed(() =>
   store.config.instances.length
     ? store.config.instances.map((i) => ({ value: i.id, label: `${i.name} · MC ${i.mc_version}` }))
-    : [{ value: store.config.selected_version, label: "ยังไม่มีโปรไฟล์ — สร้างก่อนที่หน้าอินสแตนซ์" }],
+    : [{ value: store.config.selected_version, label: store.t("mods.noProfile") }],
 );
 
 const limitOptions = [20, 40, 60].map((n) => ({ value: String(n), label: String(n) }));
@@ -447,10 +444,8 @@ function installDetail() {
   closeDetail();
 }
 
-const types = [
-  { id: "modpack" as const, label: "มอดแพ็ก" },
-  { id: "mod" as const, label: "มอดเดี่ยว" },
-];
+/* labels come from i18n: mods.modpack / mods.mod */
+const types = [{ id: "modpack" as const }, { id: "mod" as const }];
 
 const sources = [
   { id: "modrinth" as const, label: "Modrinth" },

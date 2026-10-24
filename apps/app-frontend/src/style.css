@@ -448,6 +448,28 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
+/* EN/TH switch — small mono chip next to the Java status */
+.lang-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--line-2);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--acc-2);
+  background: rgba(255, 255, 255, 0.035);
+  transition: background 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+.lang-chip:hover {
+  background: var(--acc-soft);
+  border-color: var(--acc-line);
+  color: var(--text);
+}
+
 .java-chip {
   display: inline-flex;
   align-items: center;

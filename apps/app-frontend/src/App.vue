@@ -21,9 +21,15 @@
         <span class="java-chip" :class="{ on: Boolean(store.java || store.config.java_path) }" :title="javaLabel">
           <span class="jdot" />
           <span class="truncate">{{ javaLabel }}</span>
-        </span>
-        <button class="masthead-action" @click="store.openFolder()">โฟลเดอร์ข้อมูล</button>
-      </div>
+        </span>          <button
+            class="lang-chip"
+            :title="store.lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'"
+            @click="store.toggleLang()"
+          >
+            {{ store.t("header.lang") }}
+          </button>
+          <button class="masthead-action" @click="store.openFolder()">{{ store.t("header.dataFolder") }}</button>
+        </div>
     </header>
 
     <!-- ── body ────────────────────────────────────────────────────────── -->
@@ -43,7 +49,7 @@
             class="dock-slot"
             :class="{ active: store.tab === item.id }"
             :style="{ transform: `translateY(${offsets[i] ?? 0}px)` }"
-            :aria-label="item.label"
+            :aria-label="store.t(item.labelKey)"
             :aria-current="store.tab === item.id ? 'page' : undefined"
             @click="store.tab = item.id"
           >
@@ -60,6 +66,9 @@
                   <circle cx="12" cy="8.2" r="3.4" />
                   <path d="M5.5 19.5c.7-3 3.4-4.8 6.5-4.8s5.8 1.8 6.5 4.8" />
                 </template>
+                <template v-else-if="item.id === 'github'">
+                  <path d="M9.3 20.2c-3.6 1.1-3.6-1.6-4.8-2M14.6 21v-3.1c0-.9.1-1.3-.4-1.8 2.3-.3 4.6-1.1 4.6-5a3.9 3.9 0 0 0-1.1-2.7 3.6 3.6 0 0 0-.1-2.7s-.9-.3-2.9 1.1a10 10 0 0 0-5.2 0C7.5 5.4 6.6 5.7 6.6 5.7a3.6 3.6 0 0 0-.1 2.7A3.9 3.9 0 0 0 5.4 11c0 3.9 2.3 4.7 4.6 5-.4.4-.5.9-.5 1.4V21" />
+                </template>
                 <template v-else>
                   <path d="M4 8h7M14.5 8H20M4 16h11M18.5 16H20" />
                   <circle cx="12.8" cy="8" r="1.9" fill="currentColor" stroke="none" />
@@ -67,18 +76,18 @@
                 </template>
               </svg>
             </span>
-            <span class="dock-tip" aria-hidden="true">{{ item.label }}</span>
+            <span class="dock-tip" aria-hidden="true">{{ store.t(item.labelKey) }}</span>
           </button>
         </nav>
 
-        <div class="dock-status" :class="{ on: javaReady }" :title="javaReady ? 'Java พร้อม' : 'ยังไม่พบ Java'">
+        <div class="dock-status" :class="{ on: javaReady }"            :title="javaReady ? store.t('common.javaReady') : store.t('common.noJava')">
           <span class="status-led" :class="{ on: javaReady }" />
         </div>
 
         <div class="side-foot">
           <button
             class="dock-avatar"
-            :title="`${store.config.username} · ${store.activeAccount?.kind === 'Microsoft' ? 'Microsoft' : 'โปรไฟล์ออฟไลน์'}`"
+            :title="`${store.config.username} · ${store.activeAccount?.kind === 'Microsoft' ? 'Microsoft' : store.t('common.offline')}`"
             @click="store.tab = 'accounts'"
           >
             <span class="monogram">{{ initials }}</span>
@@ -112,15 +121,17 @@ import ModsView from "./views/ModsView.vue";
 import InstancesView from "./views/InstancesView.vue";
 import AccountsView from "./views/AccountsView.vue";
 import SettingsView from "./views/SettingsView.vue";
+import GithubView from "./views/GithubView.vue";
 import logoUrl from "./assets/logo.png";
 
 const store = useAppStore();
 
-const nav: { id: TabId; label: string }[] = [
-  { id: "instances", label: "อินสแตนซ์" },
-  { id: "mods", label: "มอด & แพ็ก" },
-  { id: "accounts", label: "โปรไฟล์" },
-  { id: "settings", label: "ตั้งค่า" },
+const nav: { id: TabId; labelKey: string }[] = [
+  { id: "instances", labelKey: "nav.instances" },
+  { id: "mods", labelKey: "nav.mods" },
+  { id: "accounts", labelKey: "nav.accounts" },
+  { id: "settings", labelKey: "nav.settings" },
+  { id: "github", labelKey: "nav.github" },
 ];
 
 const views = {
@@ -128,15 +139,19 @@ const views = {
   instances: InstancesView,
   accounts: AccountsView,
   settings: SettingsView,
+  github: GithubView,
 } as const;
 
 const hour = new Date().getHours();
-const greeting =
-  hour < 12 ? "สวัสดีตอนเช้า" : hour < 17 ? "สวัสดีตอนบ่าย" : hour < 21 ? "สวัสดีตอนค่ำ" : "ดึกแล้วนะ";
+const greeting = computed(() =>
+  store.t(
+    hour < 12 ? "greeting.morning" : hour < 17 ? "greeting.afternoon" : hour < 21 ? "greeting.evening" : "greeting.night",
+  ),
+);
 
 const activeView = computed(() => views[store.tab]);
 const initials = computed(() => (store.config.username || "?").charAt(0).toUpperCase());
-const javaLabel = computed(() => store.java || store.config.java_path || "ยังไม่พบ Java");
+const javaLabel = computed(() => store.java || store.config.java_path || store.t("common.noJava"));
 const javaReady = computed(() => Boolean(store.java || store.config.java_path));
 
 /* ── magnifying dock ──────────────────────────────────────────────────── */

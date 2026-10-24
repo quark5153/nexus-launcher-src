@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { ipc, events } from "../api/ipc";
 import { DEFAULT_CURSEFORGE_KEY, DEFAULT_MS_CLIENT_ID } from "../config";
+import { translate, type Lang } from "../i18n";
 import type {
   Account,
   AppConfig,
@@ -51,6 +52,23 @@ export const useAppStore = defineStore("app", () => {
   const dataDir = ref("");
   const exportsDir = ref("");
   const appVersion = ref("0.1.0");
+
+  /* ── language (Thai default, English one click away) ────────────────── */
+  const storedLang = window.localStorage.getItem("nexus.lang");
+  const lang = ref<Lang>(storedLang === "en" ? "en" : "th");
+
+  function t(key: string, vars?: Record<string, string | number>): string {
+    return translate(lang.value, key, vars);
+  }
+
+  function setLang(next: Lang) {
+    lang.value = next;
+    window.localStorage.setItem("nexus.lang", next);
+  }
+
+  function toggleLang() {
+    setLang(lang.value === "th" ? "en" : "th");
+  }
 
   /* "0.1.0" → "v0.1 Beta": the launcher is still beta, so the label says so. */
   const versionLabel = computed(() => {
@@ -215,7 +233,7 @@ export const useAppStore = defineStore("app", () => {
     config.value.selected_version = id;
     await persist();
     const name = config.value.instances.find((i) => i.id === id)?.name ?? id;
-    say(`สลับไปใช้ ${name} แล้ว`);
+    say(t("toast.switched", { name }));
   }
 
   async function launch(shouldLaunch = true) {
@@ -228,7 +246,7 @@ export const useAppStore = defineStore("app", () => {
       if (!shouldLaunch) installed.value = [...installed.value, config.value.selected_version];
     } catch (err) {
       log(`[ERR] ${err}`);
-      say(`ผิดพลาด: ${err}`);
+      say(t("toast.error", { err: String(err) }));
     } finally {
       busy.value = false;
       progress.value = null;
@@ -242,16 +260,16 @@ export const useAppStore = defineStore("app", () => {
     try {
       if (modSource.value === "curseforge") {
         cfHits.value = await ipc.searchCurseforge(modQuery.value, modType.value, modLimit.value);
-        say(`พบ ${cfHits.value.length} รายการบน CurseForge`);
+        say(t("toast.found", { n: cfHits.value.length, source: "CurseForge" }));
       } else {
         modHits.value = [];
         const page = await ipc.searchModrinth(modQuery.value, modType.value, modLimit.value, 0);
         modHits.value = page.hits;
         modTotal.value = page.total_hits;
-        say(`พบ ${page.total_hits.toLocaleString()} รายการบน Modrinth`);
+        say(t("toast.found", { n: page.total_hits.toLocaleString(), source: "Modrinth" }));
       }
     } catch (err) {
-      say(`ค้นหาไม่สำเร็จ: ${err}`);
+      say(t("toast.searchFailed", { err: String(err) }));
     } finally {
       busy.value = false;
     }
@@ -274,7 +292,7 @@ export const useAppStore = defineStore("app", () => {
       modHits.value = [...modHits.value, ...page.hits.filter((h) => !seen.has(h.project_id))];
       modTotal.value = page.total_hits;
     } catch (err) {
-      say(`โหลดเพิ่มไม่สำเร็จ: ${err}`);
+      say(t("toast.searchFailed", { err: String(err) }));
     } finally {
       modLoadingMore.value = false;
     }
@@ -291,9 +309,9 @@ export const useAppStore = defineStore("app", () => {
         "modrinth",
         config.value.selected_version,
       );
-      say(`ติดตั้ง ${hit.title} สำเร็จ`);
+      say(t("toast.installed", { name: hit.title }));
     } catch (err) {
-      say(`ติดตั้งไม่สำเร็จ: ${err}`);
+      say(t("toast.installFailed", { err: String(err) }));
     } finally {
       busy.value = false;
       progress.value = null;
@@ -311,9 +329,9 @@ export const useAppStore = defineStore("app", () => {
         "curseforge",
         config.value.selected_version,
       );
-      say(`ติดตั้ง ${hit.name} สำเร็จ`);
+      say(t("toast.installed", { name: hit.name }));
     } catch (err) {
-      say(`ติดตั้งไม่สำเร็จ: ${err}`);
+      say(t("toast.installFailed", { err: String(err) }));
     } finally {
       busy.value = false;
       progress.value = null;
@@ -326,9 +344,9 @@ export const useAppStore = defineStore("app", () => {
     try {
       config.value = await ipc.installPackUrl(packUrl.value.trim());
       packUrl.value = "";
-      say("นำเข้าแพ็กสำเร็จ");
+      say(t("toast.packImported"));
     } catch (err) {
-      say(`นำเข้าไม่สำเร็จ: ${err}`);
+      say(t("toast.importFailed", { err: String(err) }));
     } finally {
       busy.value = false;
     }
@@ -338,7 +356,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       say(await ipc.checkUpdates());
     } catch (err) {
-      say(`เช็กอัปเดตไม่สำเร็จ: ${err}`);
+      say(t("toast.updateCheckFailed", { err: String(err) }));
     }
   }
 
@@ -346,7 +364,7 @@ export const useAppStore = defineStore("app", () => {
     busy.value = true;
     try {
       config.value = await ipc.updatePack(id);
-      say("อัปเดตแพ็กเรียบร้อย");
+      say(t("toast.packUpdated"));
     } catch (err) {
       say(`${err}`);
     } finally {
@@ -362,12 +380,12 @@ export const useAppStore = defineStore("app", () => {
         java.value = found;
         config.value.java_path = found;
         await persist();
-        say(`พบ Java: ${found}`);
+        say(t("toast.javaFound", { path: found }));
       } else {
-        say("ไม่พบ Java ในเครื่อง ระบุ path เองได้ในหน้าตั้งค่า");
+        say(t("toast.javaMissing"));
       }
     } catch (err) {
-      say(`ตรวจ Java ไม่สำเร็จ: ${err}`);
+      say(t("toast.javaCheckFailed", { err: String(err) }));
     }
   }
 
@@ -378,9 +396,9 @@ export const useAppStore = defineStore("app", () => {
       const path = await ipc.installJava(major);
       java.value = path;
       javaRuntimes.value = await ipc.listJava();
-      say(`ติดตั้ง Java ${major} พร้อมใช้แล้ว`);
+      say(t("toast.javaInstalled", { major }));
     } catch (err) {
-      say(`ติดตั้ง Java ไม่สำเร็จ: ${err}`);
+      say(t("toast.javaInstallFailed", { err: String(err) }));
     } finally {
       busy.value = false;
       progress.value = null;
@@ -391,7 +409,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       await ipc.openDataFolder();
     } catch (err) {
-      say(`เปิดโฟลเดอร์ไม่ได้: ${err}`);
+      say(t("toast.openFolderFailed", { err: String(err) }));
     }
   }
 
@@ -399,7 +417,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       await ipc.openUrl(url);
     } catch (err) {
-      say(`เปิดลิงก์ไม่ได้: ${err}`);
+      say(t("toast.openLinkFailed", { err: String(err) }));
     }
   }
 
@@ -407,7 +425,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       await ipc.openInstanceFolder(id ?? config.value.selected_version, sub);
     } catch (err) {
-      say(`เปิดโฟลเดอร์ไม่ได้: ${err}`);
+      say(t("toast.openFolderFailed", { err: String(err) }));
     }
   }
 
@@ -428,15 +446,15 @@ export const useAppStore = defineStore("app", () => {
     config.value.active_account = acc.id;
     newAccount.value = "";
     void persist();
-    say(`เพิ่มโปรไฟล์ ${name} แล้ว`);
+    say(t("toast.accountAdded", { name }));
   }
 
   async function useAccount(acc: Account) {
     try {
       config.value = await ipc.setActiveAccount(acc.id);
-      say(`สลับมาเล่นชื่อ ${acc.username}`);
+      say(t("toast.accountSwitched", { name: acc.username }));
     } catch (err) {
-      say(`สลับบัญชีไม่สำเร็จ: ${err}`);
+      say(t("toast.accountSwitchFailed", { err: String(err) }));
     }
   }
 
@@ -454,7 +472,7 @@ export const useAppStore = defineStore("app", () => {
               return config.value;
             })();
     } catch (err) {
-      say(`ลบบัญชีไม่สำเร็จ: ${err}`);
+      say(t("toast.accountRemoveFailed", { err: String(err) }));
     }
   }
 
@@ -472,7 +490,7 @@ export const useAppStore = defineStore("app", () => {
   async function startMsLogin() {
     const clientId = msClientId();
     if (!clientId) {
-      say("แอปนี้ยังไม่ได้ฝัง Azure client id (src/config.ts)");
+      say(t("toast.noClientId"));
       return;
     }
     deviceBusy.value = true;
@@ -488,20 +506,20 @@ export const useAppStore = defineStore("app", () => {
             config.value = updated;
             device.value = null;
             stopDevicePoll();
-            say("เข้าสู่ระบบ Microsoft สำเร็จ");
+            say(t("toast.signedIn"));
             return;
           }
         } catch (err) {
           device.value = null;
           stopDevicePoll();
           msCheck.value = { ok: false, message: `${err}` };
-          say("ล็อกอินไม่สำเร็จ — ดูรายละเอียดในหน้านี้หรือหน้าตั้งค่า");
+          say(t("toast.signInFailed"));
           return;
         }
         if (Date.now() - started > info.expires_in * 1000) {
           device.value = null;
           stopDevicePoll();
-          say("โค้ดหมดอายุ");
+          say(t("toast.codeExpired"));
           return;
         }
         deviceTimer = window.setTimeout(poll, Math.max(3, info.interval) * 1000);
@@ -510,7 +528,7 @@ export const useAppStore = defineStore("app", () => {
     } catch (err) {
       deviceBusy.value = false;
       msCheck.value = { ok: false, message: `${err}` };
-      say("ล็อกอินไม่สำเร็จ — ดูรายละเอียดในหน้านี้หรือหน้าตั้งค่า");
+      say(t("toast.signInFailed"));
     }
   }
 
@@ -548,9 +566,9 @@ export const useAppStore = defineStore("app", () => {
       );
       newName.value = "";
       newLoaderVersion.value = "";
-      say("สร้างโปรไฟล์ใหม่แล้ว");
+      say(t("toast.profileCreated"));
     } catch (err) {
-      say(`สร้างไม่สำเร็จ: ${err}`);
+      say(t("toast.createFailed", { err: String(err) }));
     } finally {
       busy.value = false;
     }
@@ -559,9 +577,9 @@ export const useAppStore = defineStore("app", () => {
   async function saveInstance(record: InstanceRecord) {
     try {
       config.value = await ipc.updateInstance(record);
-      say("บันทึกการตั้งค่าโปรไฟล์แล้ว");
+      say(t("toast.profileSaved"));
     } catch (err) {
-      say(`บันทึกไม่สำเร็จ: ${err}`);
+      say(t("toast.saveFailed", { err: String(err) }));
     }
   }
 
@@ -572,9 +590,9 @@ export const useAppStore = defineStore("app", () => {
         contentEntries.value = [];
         modMeta.value = {};
       }
-      say(purge ? "ลบโปรไฟล์และไฟล์ทั้งหมดแล้ว" : "ลบโปรไฟล์ออกจากคลังแล้ว");
+      say(t(purge ? "toast.profilePurged" : "toast.profileRemoved"));
     } catch (err) {
-      say(`ลบไม่สำเร็จ: ${err}`);
+      say(t("toast.deleteFailed", { err: String(err) }));
     }
   }
 
@@ -599,7 +617,7 @@ export const useAppStore = defineStore("app", () => {
     } catch (err) {
       if (loader === newLoader.value && mc === newMc.value) {
         loaderVersions.value = [];
-        say(`ดึงรายการ ${loader} ไม่สำเร็จ: ${err}`);
+        say(t("toast.loaderFailed", { loader, err: String(err) }));
       }
     } finally {
       if (loader === newLoader.value && mc === newMc.value) loaderVersionsLoading.value = false;
@@ -647,7 +665,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       await ipc.deleteContent(config.value.selected_version, contentKind.value, entry.name);
       contentEntries.value = contentEntries.value.filter((e) => e.name !== entry.name);
-      say(`ลบ ${entry.name} แล้ว`);
+      say(t("toast.deleted", { name: entry.name }));
     } catch (err) {
       say(`${err}`);
     }
@@ -684,9 +702,9 @@ export const useAppStore = defineStore("app", () => {
     busy.value = true;
     try {
       const path = await ipc.exportInstance(target);
-      say(`สำรองไว้ที่ ${path}`);
+      say(t("toast.backupAt", { path }));
     } catch (err) {
-      say(`สำรองไม่สำเร็จ: ${err}`);
+      say(t("toast.backupFailed", { err: String(err) }));
     } finally {
       busy.value = false;
     }
@@ -705,9 +723,9 @@ export const useAppStore = defineStore("app", () => {
     busy.value = true;
     try {
       config.value = await ipc.importInstance(path.trim());
-      say("นำเข้าโปรไฟล์สำเร็จ");
+      say(t("toast.profileImported"));
     } catch (err) {
-      say(`นำเข้าไม่สำเร็จ: ${err}`);
+      say(t("toast.importFailed", { err: String(err) }));
     } finally {
       busy.value = false;
     }
@@ -732,6 +750,10 @@ export const useAppStore = defineStore("app", () => {
     dataDir,
     exportsDir,
     appVersion,
+    lang,
+    t,
+    setLang,
+    toggleLang,
     modHits,
     cfHits,
     modQuery,

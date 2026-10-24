@@ -2,11 +2,11 @@
   <div class="grid h-full grid-cols-[336px_minmax(0,1fr)] gap-5 overflow-hidden">
     <!-- ── left: sign-in + offline profile ─────────────────────────────── -->
     <section class="panel panel-spine flex min-h-0 flex-col overflow-y-auto p-5">
-      <p class="hex-label"><i />บัญชี Microsoft</p>
+      <p class="hex-label"><i />{{ store.t("accounts.msTitle") }}</p>
 
       <template v-if="store.device">
         <p class="mt-3 text-[12px] leading-relaxed text-[var(--muted)]">
-          เปิดลิงก์ด้านล่างแล้วกรอกรหัสนี้เพื่อยืนยันตัวตน
+          {{ store.t("accounts.deviceHint") }}
         </p>
         <p class="mt-3 select-all text-center font-mono text-[30px] font-semibold tracking-[0.18em] text-[var(--acc)]">
           {{ store.device.user_code }}
@@ -15,25 +15,24 @@
           class="link mt-2 block w-full truncate text-center font-mono text-[10.5px]"
           @click="openBrowser()"
         >
-          {{ store.device.verification_uri }} ↗ เปิดในเบราว์เซอร์
+          {{ store.device.verification_uri }} ↗ {{ store.t("accounts.openInBrowser") }}
         </button>
         <div class="mt-4 flex items-center gap-2">
           <span class="status-led !static on animate-pulse" />
-          <span class="text-[11px] text-[var(--dim)]">กำลังรอการยืนยันจาก Microsoft…</span>
+          <span class="text-[11px] text-[var(--dim)]">{{ store.t("accounts.waiting") }}</span>
         </div>
-        <button class="btn mt-3 w-full" @click="store.cancelMsLogin()">ยกเลิก</button>
+        <button class="btn mt-3 w-full" @click="store.cancelMsLogin()">{{ store.t("common.cancel") }}</button>
       </template>
 
       <template v-else>
         <p class="mt-2 text-[11px] leading-relaxed text-[var(--muted)]">
-          ล็อกอินผ่าน Microsoft แบบ device code — ไม่ต้องกรอกรหัสผ่านในแอป และไม่เก็บรหัสผ่านไว้ที่ใด
-          ต้องมี Azure application (client) id ที่หน้าตั้งค่าก่อน
+          {{ store.t("accounts.deviceDesc") }}
         </p>
         <button class="btn btn-solid mt-4 w-full" :disabled="store.deviceBusy" @click="store.startMsLogin()">
-          {{ store.deviceBusy ? "กำลังขอโค้ด…" : "เข้าสู่ระบบด้วย Microsoft" }}
+          {{ store.deviceBusy ? store.t("accounts.requesting") : store.t("accounts.signIn") }}
         </button>
         <p v-if="!store.msClientId()" class="mt-2 text-[10px] leading-relaxed text-[#ffb3c7]">
-          แอปนี้ยังไม่ได้ฝัง Azure client id — ล็อกอิน Microsoft ใช้ไม่ได้จนกว่าจะ build ใหม่
+          {{ store.t("accounts.noClientId") }}
         </p>
 
         <div
@@ -41,7 +40,7 @@
           class="mt-3 rounded-lg bg-[rgba(255,120,150,0.08)] px-3 py-2"
         >
           <p class="font-mono text-[9px] uppercase tracking-[0.14em] text-[#ff9dbd]">
-            ล็อกอินไม่ผ่าน {{ store.msCheck.code ? `· ${store.msCheck.code}` : "" }}
+            {{ store.t("accounts.loginFailed") }} {{ store.msCheck.code ? `· ${store.msCheck.code}` : "" }}
           </p>
           <p class="mt-1.5 whitespace-pre-line text-[10px] leading-relaxed text-[#ffc0cf]">
             {{ store.msCheck.message }}
@@ -52,7 +51,7 @@
 
       <div class="mt-5 h-px w-full bg-[var(--line)]" />
 
-      <p class="mt-4 hex-label"><i />โปรไฟล์ออฟไลน์</p>
+      <p class="mt-4 hex-label"><i />{{ store.t("accounts.offlineTitle") }}</p>
       <div class="mt-3 flex items-center gap-4">
         <span class="monogram h-[58px] w-[52px] text-[24px]">{{ preview }}</span>
         <div class="min-w-0">
@@ -73,17 +72,17 @@
         maxlength="16"
         @keyup.enter="store.addAccount()"
       />
-      <button class="btn mt-2 w-full" @click="store.addAccount()">เพิ่มโปรไฟล์</button>
+      <button class="btn mt-2 w-full" @click="store.addAccount()">{{ store.t("accounts.addProfile") }}</button>
 
       <p class="mt-auto pt-5 text-[10px] leading-relaxed text-[var(--dim)]">
-        โปรไฟล์ออฟไลน์ใช้ได้กับเซิร์ฟเวอร์ crack เท่านั้น — ถ้าเล่นเซิร์ฟเวอร์จริงต้องใช้บัญชี Microsoft
+        {{ store.t("accounts.offlineNote") }}
       </p>
     </section>
 
     <!-- ── right: register ─────────────────────────────────────────────── -->
     <section class="panel flex min-h-0 flex-col overflow-hidden">
       <div class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-4 py-3">
-        <span class="hex-label"><i />บัญชีทั้งหมด</span>
+        <span class="hex-label"><i />{{ store.t("accounts.all") }}</span>
         <span class="font-mono text-[10px] tabular-nums text-[var(--dim)]">
           {{ pad(store.config.accounts.length) }}
         </span>
@@ -109,12 +108,12 @@
             v-if="acc.id === store.config.active_account"
             class="pill pill-on shrink-0 !py-1 font-mono text-[9px] uppercase tracking-[0.14em]"
           >
-            ใช้งานอยู่
+            {{ store.t("accounts.active") }}
           </span>
-          <button v-else class="btn btn-quiet shrink-0" @click="store.useAccount(acc)">ใช้บัญชีนี้</button>
+          <button v-else class="btn btn-quiet shrink-0" @click="store.useAccount(acc)">{{ store.t("accounts.use") }}</button>
           <button
             class="btn btn-quiet shrink-0 !px-2"
-            :title="acc.kind === 'Microsoft' ? 'ออกจากระบบ' : 'ลบโปรไฟล์'"
+            :title="store.t(acc.kind === 'Microsoft' ? 'accounts.signOut' : 'accounts.removeProfile')"
             @click="store.removeAccount(acc)"
           >
             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -124,19 +123,19 @@
         </div>
 
         <div v-if="store.config.accounts.length === 0" class="px-5 py-10">
-          <p class="text-[14px] font-medium">ยังไม่มีบัญชี</p>
+          <p class="text-[14px] font-medium">{{ store.t("accounts.empty") }}</p>
           <p class="mt-1.5 max-w-[320px] text-[12px] leading-relaxed text-[var(--dim)]">
-            เพิ่มบัญชี Microsoft ทางซ้ายเพื่อเล่นเซิร์ฟเวอร์จริง หรือสร้างโปรไฟล์ออฟไลน์สำหรับทดสอบ
+            {{ store.t("accounts.emptyDesc") }}
           </p>
         </div>
       </div>
 
       <div class="flex shrink-0 items-center justify-between gap-4 border-t border-[var(--line)] px-4 py-3">
         <p class="truncate text-[11px] text-[var(--muted)]">
-          กำลังเล่นในชื่อ
+          {{ store.t("accounts.playingAs") }}
           <span class="ml-1 font-medium text-[var(--text)]">{{ store.config.username }}</span>
         </p>
-        <button class="btn" @click="store.tab = 'instances'">กลับไปหน้าอินสแตนซ์ →</button>
+        <button class="btn" @click="store.tab = 'instances'">{{ store.t("accounts.back") }}</button>
       </div>
     </section>
   </div>
@@ -152,7 +151,7 @@ const store = useAppStore();
 function openBrowser() {
   const url = store.device?.verification_uri;
   if (!url) return;
-  void ipc.openUrl(url).catch(() => store.say("เปิดเบราว์เซอร์ไม่สำเร็จ — คัดลอกลิงก์ไปเปิดเอง"));
+  void ipc.openUrl(url).catch(() => store.say(url));
 }
 
 const preview = computed(() => {

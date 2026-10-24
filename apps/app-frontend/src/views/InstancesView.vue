@@ -3,14 +3,14 @@
     <!-- ── left: new profile, profile library, import/export ───────────── -->
     <div class="flex min-h-0 flex-col gap-4 pr-1">
       <section class="panel panel-spine shrink-0 p-4">
-        <p class="hex-label"><i />สร้างโปรไฟล์</p>
+        <p class="hex-label"><i />{{ store.t("instances.new") }}</p>
 
-        <label class="mt-3 block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">ชื่อโปรไฟล์</label>
-        <input v-model="store.newName" class="field mt-1.5" type="text" placeholder="เช่น Survival 1.21" maxlength="40" />
+        <label class="mt-3 block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">{{ store.t("instances.name") }}</label>
+        <input v-model="store.newName" class="field mt-1.5" type="text" :placeholder="store.t('instances.nameHint')" maxlength="40" />
 
         <div class="mt-3 grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">เวอร์ชันเกม</label>
+            <label class="block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">{{ store.t("instances.gameVersion") }}</label>
             <SelectField
               class="mt-1.5 font-mono text-[11px]"
               :model-value="store.newMc"
@@ -19,7 +19,7 @@
             />
           </div>
           <div>
-            <label class="block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">Loader</label>
+            <label class="block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">{{ store.t("instances.loader") }}</label>
             <SelectField
               class="mt-1.5 text-[11px]"
               :model-value="store.newLoader"
@@ -32,10 +32,10 @@
         <div v-if="store.newLoader !== 'vanilla'" class="mt-3">
           <div class="flex items-baseline justify-between gap-2">
             <label class="block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">
-              เวอร์ชัน {{ store.newLoader }}
+              {{ store.t("instances.loaderVersion", { loader: store.newLoader }) }}
             </label>
             <span class="font-mono text-[9px] tabular-nums text-[var(--dim)]">
-              {{ store.loaderVersionsLoading ? "กำลังโหลด…" : `${store.loaderVersions.length} บิลด์` }}
+              {{ store.loaderVersionsLoading ? store.t("common.loading") : store.t("instances.builds", { n: store.loaderVersions.length }) }}
             </span>
           </div>
           <SelectField
@@ -45,19 +45,19 @@
             @update:model-value="(value: string) => (store.newLoaderVersion = value)"
           />
           <p v-if="!store.loaderVersionsLoading && store.loaderVersions.length === 0" class="mt-1 text-[9.5px] leading-relaxed text-[var(--dim)]">
-            ไม่พบบิลด์ของ {{ store.newLoader }} สำหรับ MC {{ store.newMc }} — ใช้ค่าที่ระบบเลือกให้
+            {{ store.t("instances.noBuilds", { loader: store.newLoader, mc: store.newMc }) }}
           </p>
         </div>
 
         <button class="btn btn-solid mt-3 w-full" :disabled="store.busy" @click="store.createInstance()">
-          สร้างโปรไฟล์
+          {{ store.t("instances.new") }}
         </button>
       </section>
 
       <!-- switching profiles (including every installed modpack) -->
       <section class="panel panel-spine flex min-h-0 flex-1 flex-col p-4">
         <div class="flex items-center justify-between">
-          <p class="hex-label"><i />โปรไฟล์ทั้งหมด</p>
+          <p class="hex-label"><i />{{ store.t("instances.list") }}</p>
           <span class="font-mono text-[9px] tabular-nums text-[var(--dim)]">
             {{ store.config.instances.length }}
           </span>
@@ -65,7 +65,7 @@
 
         <div class="mt-2.5 min-h-0 flex-1 overflow-y-auto pr-1">
           <p v-if="store.config.instances.length === 0" class="py-4 text-center text-[11px] text-[var(--dim)]">
-            ยังไม่มีโปรไฟล์
+            {{ store.t("instances.empty") }}
           </p>
           <button
             v-for="item in store.config.instances"
@@ -81,7 +81,7 @@
               </span>
               <span class="block truncate font-mono text-[9px] text-[var(--dim)]">
                 MC {{ item.mc_version }} ·
-                {{ item.loader ? `${item.loader}${item.loader_version ? " " + item.loader_version : ""}` : "vanilla" }}
+                {{ item.loader ? `${item.loader}${item.loader_version ? " " + item.loader_version : ""}` : store.t("common.vanilla") }}
               </span>
             </span>
             <span v-if="item.provider === 'modpack'" class="lib-tag">pack</span>
@@ -90,17 +90,17 @@
       </section>
 
       <section class="panel panel-spine shrink-0 p-4">
-        <p class="hex-label"><i />นำเข้า / สำรอง</p>
+        <p class="hex-label"><i />{{ store.t("instances.importExport") }}</p>
         <p class="mt-2 text-[10.5px] leading-relaxed text-[var(--dim)]">
-          รองรับ .mrpack (Modrinth), .zip แพ็ก CurseForge และไฟล์สำรองของ Nexus เอง
+          {{ store.t("instances.importHint") }}
         </p>
         <input v-model="importPath" class="field mt-2.5 font-mono text-[10px]" type="text" placeholder="/path/to/pack.zip" />
         <button class="btn mt-2 w-full" :disabled="store.busy || !importPath.trim()" @click="doImport()">
-          นำเข้าไฟล์
+          {{ store.t("instances.importFile") }}
         </button>
         <div class="mt-3 h-px w-full bg-[var(--line)]" />
         <button class="btn mt-3 w-full" :disabled="!inst" @click="store.exportInstance()">
-          สำรองโปรไฟล์นี้ (.zip)
+          {{ store.t("instances.backup") }}
         </button>
         <p class="mt-2 truncate font-mono text-[9px] text-[var(--dim)]" :title="store.exportsDir">
           {{ store.exportsDir }}
@@ -118,11 +118,11 @@
               MC {{ inst.mc_version }}
             </span>
             <span class="pill !py-0.5 font-mono text-[9px] uppercase tracking-[0.14em]">
-              {{ inst.loader ? inst.loader + " " + (inst.loader_version || "") : "vanilla" }}
+              {{ inst.loader ? inst.loader + " " + (inst.loader_version || "") : store.t("common.vanilla") }}
             </span>
           </div>
           <p class="mt-1 truncate font-mono text-[9.5px] text-[var(--dim)]">
-            {{ inst.id }} · เล่นล่าสุด {{ inst.last_played || "ยังไม่เคย" }}
+            {{ inst.id }} · {{ store.t("instances.lastPlayed") }} {{ inst.last_played || store.t("instances.never") }}
           </p>
         </div>
         <div class="flex shrink-0 gap-2">
@@ -132,11 +132,11 @@
             :disabled="store.busy"
             @click="store.updatePack(inst.id)"
           >
-            อัปเดตแพ็ก
+            {{ store.t("instances.updatePack") }}
           </button>
-          <button class="btn !py-1.5 text-[11px]" @click="store.openInstanceFolder()">เปิดโฟลเดอร์</button>
+          <button class="btn !py-1.5 text-[11px]" @click="store.openInstanceFolder()">{{ store.t("instances.openFolder") }}</button>
           <button class="btn btn-solid !py-1.5 text-[11px]" :disabled="store.busy" @click="store.launch(true)">
-            เล่น
+            {{ store.t("instances.play") }}
           </button>
         </div>
       </header>
@@ -146,16 +146,16 @@
         <div class="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
           <section class="panel panel-spine shrink-0 p-4">
             <div class="flex items-center justify-between">
-              <p class="hex-label"><i />ตั้งค่าเฉพาะโปรไฟล์</p>
+              <p class="hex-label"><i />{{ store.t("instances.settings") }}</p>
               <span class="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--dim)]">
-                {{ draft.ramMb ? `${(draft.ramMb / 1024).toFixed(1)} GB` : "ตามระบบ" }}
+                {{ draft.ramMb ? `${(draft.ramMb / 1024).toFixed(1)} GB` : store.t("common.auto") }}
               </span>
             </div>
 
             <div class="mt-3 flex items-center gap-3">
               <label class="flex items-center gap-2 text-[11px] text-[var(--muted)]">
                 <input v-model="draft.useGlobalRam" type="checkbox" class="accent-[var(--acc)]" />
-                ใช้แรมตามทั้งระบบ
+                {{ store.t("instances.useGlobalRam") }}
               </label>
               <input
                 v-model.number="draft.ramMb"
@@ -169,18 +169,18 @@
             </div>
 
             <label class="mt-3 block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">
-              Java path (เว้นว่าง = อัตโนมัติ)
+              {{ store.t("instances.javaPath") }}
             </label>
             <input v-model="draft.javaPath" class="field mt-1.5 font-mono text-[10px]" type="text" placeholder="auto" />
 
             <label class="mt-3 block text-[10px] uppercase tracking-[0.14em] text-[var(--dim)]">
-              JVM arguments เพิ่มเติม
+              {{ store.t("instances.extraJvm") }}
             </label>
             <textarea v-model="draft.extraJvm" class="field field-area mt-1.5 w-full" rows="2" placeholder="-XX:+UseZGC" />
 
             <div class="mt-3 flex gap-2">
-              <button class="btn btn-solid flex-1 !py-1.5 text-[11.5px]" @click="saveDraft()">บันทึก</button>
-              <button class="btn !py-1.5 text-[11.5px]" @click="removeProfile(false)">เอาออกจากคลัง</button>
+              <button class="btn btn-solid flex-1 !py-1.5 text-[11.5px]" @click="saveDraft()">{{ store.t("common.save") }}</button>
+              <button class="btn !py-1.5 text-[11.5px]" @click="removeProfile(false)">{{ store.t("instances.removeFromLibrary") }}</button>
             </div>
 
             <!-- removing the profile record is not the same as freeing the disk -->
@@ -191,7 +191,7 @@
                 :disabled="store.busy"
                 @click="confirmPurge = true"
               >
-                {{ inst.provider === "modpack" ? "ลบมอดแพ็กนี้ (ลบไฟล์)" : "ลบโปรไฟล์นี้ (ลบไฟล์)" }}
+                {{ store.t(inst.provider === "modpack" ? "instances.deletePack" : "instances.deleteProfile") }}
               </button>
               <div v-else class="flex gap-2">
                 <button
@@ -199,12 +199,12 @@
                   :disabled="store.busy"
                   @click="removeProfile(true)"
                 >
-                  ยืนยันลบทั้งหมด
+                  {{ store.t("instances.confirmDelete") }}
                 </button>
-                <button class="btn !py-1.5 text-[11.5px]" @click="confirmPurge = false">ยกเลิก</button>
+                <button class="btn !py-1.5 text-[11.5px]" @click="confirmPurge = false">{{ store.t("common.cancel") }}</button>
               </div>
               <p class="mt-1.5 text-[9.5px] leading-relaxed text-[var(--dim)]">
-                ลบโฟลเดอร์ของโปรไฟล์ออกจากดิสก์ — mods, worlds, config หายทั้งหมด
+                {{ store.t("instances.deleteHint") }}
               </p>
             </div>
           </section>
@@ -218,14 +218,14 @@
                 :class="{ 'pill-on': store.contentKind === k.id }"
                 @click="store.loadContent(k.id)"
               >
-                {{ k.label }}
+                {{ store.t(`instances.kind.${k.id}`) }}
               </button>
               <span class="ml-auto font-mono text-[10px] text-[var(--dim)]">{{ store.contentEntries.length }}</span>
             </div>
 
             <div class="mt-3 min-h-0 flex-1 overflow-y-auto">
               <div v-if="store.contentEntries.length === 0" class="py-6 text-center text-[11px] text-[var(--dim)]">
-                ยังไม่มีไฟล์ในหมวดนี้
+                {{ store.t("instances.kindEmpty") }}
               </div>
               <div
                 v-for="entry in store.contentEntries"
@@ -269,20 +269,20 @@
                   class="btn btn-quiet !px-2 !py-1 text-[9.5px]"
                   @click="store.toggleContent(entry)"
                 >
-                  {{ entry.enabled ? "ปิด" : "เปิด" }}
+                  {{ store.t(entry.enabled ? "common.disable" : "common.enable") }}
                 </button>
                 <button
                   v-if="store.contentKind !== 'servers'"
                   class="btn btn-quiet !px-2 !py-1 text-[9.5px]"
                   @click="store.deleteContent(entry)"
                 >
-                  ลบ
+                  {{ store.t("common.delete") }}
                 </button>
               </div>
             </div>
 
             <button class="btn mt-3 w-full !py-1.5 text-[11px]" @click="store.openInstanceFolder(folderFor(store.contentKind))">
-              เปิดโฟลเดอร์ {{ store.contentKind }}
+              {{ store.t("instances.openKindFolder", { kind: store.contentKind }) }}
             </button>
           </section>
         </div>
@@ -290,16 +290,16 @@
         <!-- right: diagnostics -->
         <section class="panel flex min-h-0 flex-col overflow-hidden">
           <div class="flex shrink-0 items-center gap-2 border-b border-[var(--line)] px-4 py-2.5">
-            <span class="hex-label"><i />log ล่าสุด</span>
-            <button class="btn btn-quiet ml-auto !px-2 !py-1 text-[10px]" @click="refreshLog()">รีเฟรช</button>
-            <button class="btn btn-quiet !px-2 !py-1 text-[10px]" @click="store.openInstanceFolder('logs')">โฟลเดอร์ log</button>
+            <span class="hex-label"><i />{{ store.t("instances.latestLog") }}</span>
+            <button class="btn btn-quiet ml-auto !px-2 !py-1 text-[10px]" @click="refreshLog()">{{ store.t("common.refresh") }}</button>
+            <button class="btn btn-quiet !px-2 !py-1 text-[10px]" @click="store.openInstanceFolder('logs')">{{ store.t("instances.logFolder") }}</button>
           </div>
 
-          <pre class="log-box min-h-0 flex-1 overflow-auto p-4">{{ store.currentLog || "— ยังไม่มี log ของโปรไฟล์นี้ กดเล่นเกมหรือรีเฟรช —" }}</pre>
+          <pre class="log-box min-h-0 flex-1 overflow-auto p-4">{{ store.currentLog || store.t("instances.noLog") }}</pre>
 
           <div class="shrink-0 border-t border-[var(--line)] px-4 py-2.5">
             <div class="flex items-center gap-2">
-              <span class="hex-label"><i />crash reports</span>
+              <span class="hex-label"><i />{{ store.t("instances.crashes") }}</span>
               <span class="ml-auto font-mono text-[10px] text-[var(--dim)]">{{ store.crashes.length }}</span>
             </div>
             <div class="mt-2 flex max-h-[92px] flex-wrap gap-1.5 overflow-y-auto">
@@ -311,7 +311,7 @@
               >
                 {{ crash.name }}
               </button>
-              <span v-if="store.crashes.length === 0" class="text-[10.5px] text-[var(--dim)]">ยังไม่มี crash report</span>
+              <span v-if="store.crashes.length === 0" class="text-[10.5px] text-[var(--dim)]">{{ store.t("instances.noCrashes") }}</span>
             </div>
             <pre v-if="store.crashText" class="log-box mt-2 max-h-[160px] overflow-auto p-2.5">{{ store.crashText }}</pre>
           </div>
@@ -329,9 +329,9 @@
             </svg>
           </span>
         </span>
-        <p class="mt-4 text-[16px] font-semibold">ยังไม่มีโปรไฟล์</p>
+        <p class="mt-4 text-[16px] font-semibold">{{ store.t("instances.empty") }}</p>
         <p class="mt-1.5 text-[12px] leading-relaxed text-[var(--dim)]">
-          สร้างโปรไฟล์ทางซ้ายเพื่อแยกเวอร์ชันเกม มอด และแรมของแต่ละเซิร์ฟเวอร์ออกจากกัน
+          {{ store.t("instances.emptyDesc") }}
         </p>
       </div>
     </section>
@@ -356,13 +356,8 @@ const loaders = [
   { id: "neoforge", label: "NeoForge" },
 ];
 
-const kinds = [
-  { id: "mods", label: "Mods" },
-  { id: "worlds", label: "Worlds" },
-  { id: "resourcepacks", label: "Resource Packs" },
-  { id: "shaderpacks", label: "Shaders" },
-  { id: "servers", label: "Servers" },
-];
+/* labels come from i18n: instances.kind.<id> */
+const kinds = ["mods", "worlds", "resourcepacks", "shaderpacks", "servers"].map((id) => ({ id }));
 
 const inst = computed(() => store.selectedInstance);
 
@@ -374,7 +369,7 @@ const releases = computed(() => {
 const mcOptions = computed(() => releases.value.map((v) => ({ value: v.id, label: v.id })));
 const loaderOptions = loaders.map((l) => ({ value: l.id, label: l.label }));
 const loaderVersionOptions = computed(() => [
-  { value: "", label: "แนะนำอัตโนมัติ (บิลด์เสถียรสุด)" },
+  { value: "", label: store.t("instances.autoBuild") },
   ...store.loaderVersions.map((v) => ({ value: v, label: v })),
 ]);
 
