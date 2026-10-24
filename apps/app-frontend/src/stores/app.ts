@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { defineStore } from "pinia";
 import { ipc, events } from "../api/ipc";
 import { DEFAULT_CURSEFORGE_KEY, DEFAULT_MS_CLIENT_ID } from "../config";
@@ -78,8 +78,10 @@ export const useAppStore = defineStore("app", () => {
     return `v${major}.${minor}${extra} Beta`;
   });
 
-  const modHits = ref<ModrinthHit[]>([]);
-  const cfHits = ref<CfHit[]>([]);
+  /* shallow: search result objects are large and read-only in the UI, so
+     proxying every hit of a long list only cost memory and CPU */
+  const modHits = shallowRef<ModrinthHit[]>([]);
+  const cfHits = shallowRef<CfHit[]>([]);
   const modQuery = ref("");
   const modType = ref<"modpack" | "mod">("modpack");
   const modSource = ref<ModSource>("modrinth");
@@ -122,9 +124,40 @@ export const useAppStore = defineStore("app", () => {
     }, 3600);
   }
 
+  /* ── event batching ────────────────────────────────────────────────
+     The core emits a log line and a progress update for every file it
+     downloads. Assigning those straight into refs re-rendered the ticker and
+     the progress bar dozens of times a second, so both are coalesced into one
+     write per animation frame. */
+  const LOG_LIMIT = 400;
+  let pendingLogs: string[] = [];
+  let logFrame = 0;
+
+  function flushLogs() {
+    logFrame = 0;
+    if (!pendingLogs.length) return;
+    const merged = logs.value.concat(pendingLogs);
+    pendingLogs = [];
+    logs.value = merged.length > LOG_LIMIT ? merged.slice(-LOG_LIMIT) : merged;
+  }
+
   function log(line: string) {
-    logs.value.push(line);
-    if (logs.value.length > 400) logs.value.splice(0, logs.value.length - 400);
+    pendingLogs.push(line);
+    if (!logFrame) logFrame = window.requestAnimationFrame(flushLogs);
+  }
+
+  let pendingProgress: ProgressPayload | null = null;
+  let progressFrame = 0;
+
+  function flushProgress() {
+    progressFrame = 0;
+    if (pendingProgress) progress.value = pendingProgress;
+    pendingProgress = null;
+  }
+
+  function queueProgress(next: ProgressPayload | null) {
+    pendingProgress = next;
+    if (!progressFrame) progressFrame = window.requestAnimationFrame(flushProgress);
   }
 
   const selectedInstance = computed<InstanceRecord | undefined>(() =>
@@ -190,7 +223,7 @@ export const useAppStore = defineStore("app", () => {
     try {
       const [unlistenLog, unlistenProgress] = await Promise.all([
         events.onLog((line) => log(line)),
-        events.onProgress((p) => (progress.value = p)),
+        events.onProgress((p) => queueProgress(p)),
       ]);
       void unlistenLog;
       void unlistenProgress;
